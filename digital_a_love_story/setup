@@ -1,0 +1,29 @@
+#!/bin/bash
+
+DOWNLOAD_DIR=$1
+INSTALL_DIR=$2
+KEEP_INSTALLERS=$4
+
+if [ ! -e $DOWNLOAD_DIR'/digital_a_love_story' ]; then
+	mkdir -p $DOWNLOAD_DIR'/digital_a_love_story'
+	curl -L -o $DOWNLOAD_DIR'/digital_a_love_story/digital-1.1.tar.bz2' \
+	'http://www.scoutshonour.com/lilyofthevalley/digital-1.1.tar.bz2'
+fi
+
+mkdir -p $INSTALL_DIR/'digital_a_love_story'
+tar -xvf $DOWNLOAD_DIR'/digital_a_love_story/digital-1.1.tar.bz2' -C \
+$INSTALL_DIR/'digital_a_love_story/'
+
+mv $INSTALL_DIR/'digital_a_love_story/Digital-linux-x86' \
+$INSTALL_DIR/'digital_a_love_story/game'
+
+if [ $KEEP_INSTALLERS == 'False' ]; then
+	rm -R $DOWNLOAD_DIR'/digital_a_love_story'
+fi
+
+echo -e '#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+$DIR/game/Digital.sh' > $INSTALL_DIR'/digital_a_love_story/start.sh'
+chmod +x $INSTALL_DIR'/digital_a_love_story/start.sh'
+
+#Digital: A Love Story

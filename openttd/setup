@@ -1,0 +1,35 @@
+#!/bin/bash
+
+DOWNLOAD_DIR=$1
+INSTALL_DIR=$2
+KEEP_INSTALLERS=$4
+
+if [ ! -e $DOWNLOAD_DIR'/openttd' ]; then
+	mkdir -p $DOWNLOAD_DIR'/openttd'
+	cd $DOWNLOAD_DIR'/openttd'
+
+	if [ $(uname -m) == "x86_64" ]; then
+		curl -L -O -C - \
+		'https://binaries.openttd.org/releases/1.6.1/openttd-1.6.1-linux-generic-amd64.tar.xz'
+	else
+		curl -L -O -C - \
+		'https://binaries.openttd.org/releases/1.6.1/openttd-1.6.1-linux-generic-i686.tar.xz'
+	fi
+fi
+
+INSTALLER=$(ls $DOWNLOAD_DIR/openttd/)
+
+tar xvfJ  $DOWNLOAD_DIR'/openttd/'$INSTALLER -C \
+$INSTALL_DIR/'openttd/'
+mv $INSTALL_DIR/'openttd/openttd-'* $INSTALL_DIR/'openttd/game'
+
+if [ $KEEP_INSTALLERS == 'False' ]; then
+	rm -R $DOWNLOAD_DIR'/openttd'
+fi
+
+echo -e '#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+$DIR/game/openttd' > $INSTALL_DIR'/openttd/start.sh'
+chmod +x $INSTALL_DIR'/openttd/start.sh'
+
+#OpenTTD

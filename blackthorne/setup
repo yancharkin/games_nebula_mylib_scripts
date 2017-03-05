@@ -1,0 +1,56 @@
+#!/bin/bash
+
+DOWNLOAD_DIR=$1
+INSTALL_DIR=$2
+KEEP_INSTALLERS=$4
+
+if [ ! -e $DOWNLOAD_DIR'/blackthorne' ]; then
+	mkdir -p $DOWNLOAD_DIR'/blackthorne'
+	curl -L -o $DOWNLOAD_DIR'/blackthorne/Blackthorne-Setup.exe' \
+	'http://dist.blizzard.com/downloads/blackthorne/5e1a0ce1d84e3ee3005dd26181e14a2f/Blackthorne-Setup.exe'
+fi
+
+7z -bb x $DOWNLOAD_DIR'/blackthorne/Blackthorne-Setup.exe' -o\
+$INSTALL_DIR/'blackthorne/tmp'
+7z -bb x $INSTALL_DIR/'blackthorne/tmp/_A48F2661F3CDB0B13C5AB4918FE2E91B' -o\
+$INSTALL_DIR/'blackthorne/tmp2'
+mv $INSTALL_DIR/'blackthorne/tmp2/_C987F762EF304955BB86AB432FF6F847' \
+$INSTALL_DIR/'blackthorne/manual.pdf'
+mkdir -p $INSTALL_DIR/'blackthorne/game'
+mv $INSTALL_DIR/'blackthorne/tmp2/_7770311E01264484BDC66FB81E4EF650' \
+$INSTALL_DIR/'blackthorne/game/BTHORNE.EXE'
+mv $INSTALL_DIR/'blackthorne/tmp2/_126448A72F4442D39DCD600746EE09F7' \
+$INSTALL_DIR/'blackthorne/game/DATA.DAT'
+rm -r mv $INSTALL_DIR/'blackthorne/tmp/' $INSTALL_DIR/'blackthorne/tmp2/'
+
+if [ $KEEP_INSTALLERS == 'False' ]; then
+	rm -R $DOWNLOAD_DIR'/blackthorne'
+fi
+
+echo '#!/bin/bash
+INSTALL_DIR=$1
+NEBULA_DIR=$2
+rm $HOME/.games_nebula/games/.dosbox/blackthorne
+mkdir -p $HOME/.games_nebula/games/.dosbox
+ln -s $INSTALL_DIR/blackthorne/game \
+$HOME/.games_nebula/games/.dosbox/blackthorne
+python $NEBULA_DIR/launcher_dosbox.py blackthorne' > \
+$INSTALL_DIR'/blackthorne/start.sh'
+chmod +x $INSTALL_DIR'/blackthorne/start.sh'
+
+echo "[cpu]
+core = dynamic
+cycles = fixed 20000
+
+[sblaster]
+sbtype = sbpro2
+
+[autoexec]
+@echo off
+mount C $HOME/.games_nebula/games/.dosbox/blackthorne
+c:
+cls
+BTHORNE.EXE
+exit" > $INSTALL_DIR'/blackthorne/dosbox_game.conf'
+
+#Blackthorne

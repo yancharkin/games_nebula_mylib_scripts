@@ -1,0 +1,157 @@
+#!/bin/bash
+
+DOWNLOAD_DIR=$1
+INSTALL_DIR=$2
+KEEP_INSTALLERS=$4
+
+if [ ! -e $DOWNLOAD_DIR'/dreamweb' ]; then
+	
+	VERSION=$(zenity --list --radiolist --title="DreamWeb" \
+	--text="Version to download:" --hide-header \
+	--column="x" --column="Title" \
+	--width=360 --height=320 \
+	FALSE "Floppy DOS Version (English UK)" \
+	TRUE "CD DOS Version (English UK)" \
+	FALSE "CD DOS Version (English US)" \
+	FALSE "CD DOS Version (French)" \
+	FALSE "CD DOS Version (German)" \
+	FALSE "CD DOS Version (Italian)" \
+	FALSE "CD DOS Version (Spanish)"
+	)
+
+	if [ "$VERSION" == "Floppy DOS Version (English UK)" ]; then
+		mkdir -p $DOWNLOAD_DIR'/dreamweb'
+		cd $DOWNLOAD_DIR'/dreamweb'
+		curl -L -O -C - 'http://scummvm.org/frs/extras/Dreamweb/dreamweb-uk-1.1.zip'
+		echo uk > .version
+	fi
+	if [ "$VERSION" == "CD DOS Version (English UK)" ]; then
+		mkdir -p $DOWNLOAD_DIR'/dreamweb'
+		cd $DOWNLOAD_DIR'/dreamweb'
+		curl -L -O -C - 'http://scummvm.org/frs/extras/Dreamweb/dreamweb-cd-uk-1.1.zip'
+		echo uk > .version
+	fi
+	if [ "$VERSION" == "CD DOS Version (English US)" ]; then
+		mkdir -p $DOWNLOAD_DIR'/dreamweb'
+		cd $DOWNLOAD_DIR'/dreamweb'
+		curl -L -O -C - 'http://scummvm.org/frs/extras/Dreamweb/dreamweb-cd-us-1.1.zip'
+		echo us > .version
+	fi
+	if [ "$VERSION" == "CD DOS Version (French)" ]; then
+		mkdir -p $DOWNLOAD_DIR'/dreamweb'
+		cd $DOWNLOAD_DIR'/dreamweb'
+		curl -L -O -C - 'http://scummvm.org/frs/extras/Dreamweb/dreamweb-cd-fr-1.1.zip'
+		echo fr > .version
+	fi
+	if [ "$VERSION" == "CD DOS Version (German)" ]; then
+		curl -L -O -C - 'http://scummvm.org/frs/extras/Dreamweb/dreamweb-cd-de-1.1.zip'
+		echo de > .version
+	fi
+	if [ "$VERSION" == "CD DOS Version (Italian)" ]; then
+		mkdir -p $DOWNLOAD_DIR'/dreamweb'
+		cd $DOWNLOAD_DIR'/dreamweb'
+		curl -L -O -C - 'http://scummvm.org/frs/extras/Dreamweb/dreamweb-cd-it-1.1.zip'
+		echo it > .version
+	fi
+	if [ "$VERSION" == "CD DOS Version (Spanish)" ]; then
+		mkdir -p $DOWNLOAD_DIR'/dreamweb'
+		cd $DOWNLOAD_DIR'/dreamweb'
+		curl -L -O -C - 'http://scummvm.org/frs/extras/Dreamweb/dreamweb-cd-es-1.1.zip'
+		echo es > .version
+	fi
+	if [ "$VERSION" == "" ]; then
+		rm -R $INSTALL_DIR'/dreamweb'
+		exit 1
+	fi
+
+fi
+
+INSTALLER=$(ls $DOWNLOAD_DIR/dreamweb/)
+
+mkdir -p $INSTALL_DIR/'dreamweb/game'
+unzip -o $DOWNLOAD_DIR'/dreamweb/'$INSTALLER \
+-d $INSTALL_DIR/'dreamweb/game'
+
+if [ $KEEP_INSTALLERS == 'False' ]; then
+	rm -R $DOWNLOAD_DIR'/dreamweb'
+fi
+
+cd $DOWNLOAD_DIR'/dreamweb'
+VERSION=$(head -1 .version)
+
+echo $VERSION
+
+if [ "$VERSION" == 'uk' ]; then
+
+	echo -e '#!/bin/bash
+
+	INSTALL_DIR=$1
+	NEBULA_DIR=$2
+
+	SCUMMVMRC=$INSTALL_DIR/dreamweb/scummvmrc
+	readarray -t ARRAY <<<"$(cat "$SCUMMVMRC")"
+	LENGHT=${#ARRAY[@]}
+
+	for i in $(seq 1 $LENGHT); do
+		if [[ ${ARRAY[i]} == "[dreamweb]" ]]; then
+			FIRST_LINE=$i
+		fi
+	done
+
+	cp $HOME/.games_nebula/config/scummvmrc $SCUMMVMRC
+
+	for i in $(seq $FIRST_LINE $LENGHT); do 
+		echo ${ARRAY[i]} >> "$SCUMMVMRC"
+	done
+
+	python $NEBULA_DIR/launcher_scummvm.py dreamweb dreamweb' > \
+	$INSTALL_DIR'/dreamweb/start.sh'
+	chmod +x $INSTALL_DIR'/dreamweb/start.sh'
+
+	cp $HOME'/.games_nebula/config/scummvmrc' $INSTALL_DIR'/dreamweb/'
+
+echo -e "[dreamweb]
+gameid=dreamweb
+path=$INSTALL_DIR/dreamweb/game
+savepath=$INSTALL_DIR/dreamweb/game" >> \
+$INSTALL_DIR'/dreamweb/scummvmrc'
+
+else
+
+	echo -e '#!/bin/bash
+
+	INSTALL_DIR=$1
+	NEBULA_DIR=$2
+
+	SCUMMVMRC=$INSTALL_DIR/dreamweb/scummvmrc
+	readarray -t ARRAY <<<"$(cat "$SCUMMVMRC")"
+	LENGHT=${#ARRAY[@]}
+
+	for i in $(seq 1 $LENGHT); do
+		if [[ ${ARRAY[i]} == "'"[dreamweb-cd-$VERSION]"'" ]]; then
+			FIRST_LINE=$i
+		fi
+	done
+
+	cp $HOME/.games_nebula/config/scummvmrc $SCUMMVMRC
+
+	for i in $(seq $FIRST_LINE $LENGHT); do 
+		echo ${ARRAY[i]} >> "$SCUMMVMRC"
+	done
+
+	python $NEBULA_DIR/launcher_scummvm.py dreamweb '"dreamweb-cd-$VERSION" > \
+	$INSTALL_DIR'/dreamweb/start.sh'
+	chmod +x $INSTALL_DIR'/dreamweb/start.sh'
+
+	cp $HOME'/.games_nebula/config/scummvmrc' $INSTALL_DIR'/dreamweb/'
+	
+echo -e "[dreamweb-cd-$VERSION]
+gameid=dreamweb
+language=$VERSION
+path=$INSTALL_DIR/dreamweb/game
+savepath=$INSTALL_DIR/dreamweb/game" >> \
+$INSTALL_DIR'/dreamweb/scummvmrc'
+
+fi
+
+#DreamWeb

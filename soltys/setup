@@ -1,0 +1,54 @@
+#!/bin/bash
+
+DOWNLOAD_DIR=$1
+INSTALL_DIR=$2
+KEEP_INSTALLERS=$4
+
+if [ ! -e $DOWNLOAD_DIR'/soltys' ]; then
+	mkdir -p $DOWNLOAD_DIR'/soltys'
+	cd $DOWNLOAD_DIR'/soltys'
+	curl -L -O -C - 'http://scummvm.org/frs/extras/Soltys/soltys-en-v1.0.zip'
+fi
+
+unzip -o $DOWNLOAD_DIR'/soltys/soltys-en-v1.0.zip' \
+-d $INSTALL_DIR/'soltys/game'
+
+if [ $KEEP_INSTALLERS == 'False' ]; then
+	rm -R $DOWNLOAD_DIR'/soltys'
+fi
+
+echo -e '#!/bin/bash
+
+INSTALL_DIR=$1
+NEBULA_DIR=$2
+
+SCUMMVMRC=$INSTALL_DIR/soltys/scummvmrc
+readarray -t ARRAY <<<"$(cat "$SCUMMVMRC")"
+LENGHT=${#ARRAY[@]}
+
+for i in $(seq 1 $LENGHT); do
+	if [[ ${ARRAY[i]} == "[soltys]" ]]; then
+		FIRST_LINE=$i
+	fi
+done
+
+cp $HOME/.games_nebula/config/scummvmrc $SCUMMVMRC
+
+for i in $(seq $FIRST_LINE $LENGHT); do
+	echo ${ARRAY[i]} >> "$SCUMMVMRC"
+done
+
+python $NEBULA_DIR/launcher_scummvm.py soltys soltys' > \
+$INSTALL_DIR'/soltys/start.sh'
+chmod +x $INSTALL_DIR'/soltys/start.sh'
+
+cp $HOME'/.games_nebula/config/scummvmrc' $INSTALL_DIR'/soltys/'
+
+echo "[soltys]
+gameid=soltys
+description=Soltys (Freeware v1.0/DOS/English)
+path=$INSTALL_DIR/soltys/game
+savepath=$INSTALL_DIR/soltys/game" >> \
+$INSTALL_DIR'/soltys/scummvmrc'
+
+#Soltys
