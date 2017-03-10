@@ -1,0 +1,54 @@
+#!/bin/bash
+
+DOWNLOAD_DIR=$1
+INSTALL_DIR=$2
+KEEP_INSTALLERS=$4
+
+LINK64='http://te4.org/dl/t-engine/t-engine4-linux64-1.5.0.tar.bz2'
+LINK64_NOMUSIC='http://te4.org/dl/t-engine/t-engine4-linux64-1.5.0-nomusic.tar.bz2'
+LINK32='http://te4.org/dl/t-engine/t-engine4-linux32-1.5.0.tar.bz2'
+LINK32_NOMUSIC='http://te4.org/dl/t-engine/t-engine4-linux32-1.5.0-nomusic.tar.bz2'
+
+if [ ! -f $DOWNLOAD_DIR'/tome/tome.tar.bz2' ]; then
+	mkdir -p $DOWNLOAD_DIR'/tome'
+    
+    VER=$(zenity --list \
+    --hide-header \
+    --title "Tales of Maj'Eyal" \
+    --text "Version to download:" \
+    --column "Version" \
+    "With music" \
+    "Without music")
+    
+    if [ "$VER" == "With music" ]; then
+        if [ $(uname -m) == "x86_64" ]; then
+            curl -L -o $DOWNLOAD_DIR'/tome/tome.tar.bz2' -C - $LINK64
+        else
+            curl -L -o $DOWNLOAD_DIR'/tome/tome.tar.bz2' -C - $LINK32
+        fi
+    fi
+    if [ "$VER" == "Without music" ]; then
+        if [ $(uname -m) == "x86_64" ]; then
+            curl -L -o $DOWNLOAD_DIR'/tome/tome.tar.bz2' -C - $LINK64_NOMUSIC
+        else
+            curl -L -o $DOWNLOAD_DIR'/tome/tome.tar.bz2' -C - $LINK32_NOMUSIC
+        fi
+    fi
+    
+fi
+
+mkdir -p $INSTALL_DIR'/tome/game'
+tar --strip-components=1 -xjvf $DOWNLOAD_DIR'/tome/tome.tar.bz2' -C $INSTALL_DIR'/tome/game'
+
+if [ $KEEP_INSTALLERS == 'False' ]; then
+	rm -R $DOWNLOAD_DIR'/tome'
+fi
+
+echo -e '#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DIR/game
+./t-engine' > \
+$INSTALL_DIR'/tome/start.sh'
+chmod +x $INSTALL_DIR'/tome/start.sh'
+
+#Tales of Maj'Eyal
