@@ -1,45 +1,17 @@
 #!/bin/bash
 
-DOWNLOAD_DIR=$1
-INSTALL_DIR=$2
-KEEP_INSTALLERS=$4
+source "$NEBULA_DIR/scripts/shell_functions.sh"
 
-if [ ! -e $DOWNLOAD_DIR'/tes_i_arena' ]; then
-	mkdir -p $DOWNLOAD_DIR'/tes_i_arena'
-	curl -L -o $DOWNLOAD_DIR'/tes_i_arena/Arena106Setup.zip' \
-	'http://static.elderscrolls.com/elderscrolls.com/assets/files/tes/extras/Arena106Setup.zip'
+get_mylib_distr 'Arena106Setup.zip' \
+'http://static.elderscrolls.com/elderscrolls.com/assets/files/tes/extras/Arena106Setup.zip'
+
+7z x -aoa -o"$INSTALL_DIR/$GAME_NAME/tmp" "$DOWNLOAD_DIR/$GAME_NAME/Arena106Setup.zip"
+7z x -aoa -o"$INSTALL_DIR/$GAME_NAME/tmp" "$INSTALL_DIR/$GAME_NAME/tmp/Arena106.exe"
+mv "$INSTALL_DIR/$GAME_NAME/tmp/ARENA" "$INSTALL_DIR/$GAME_NAME/game"
+rm -R "$INSTALL_DIR/$GAME_NAME/tmp"
+
+if [ "$KEEP_INSTALLERS" == 'False' ]; then
+rm -R "$DOWNLOAD_DIR/$GAME_NAME"
 fi
-
-mkdir -p $INSTALL_DIR/'tes_i_arena/tmp'
-unzip $DOWNLOAD_DIR'/tes_i_arena/Arena106Setup.zip' \
--d $INSTALL_DIR/'tes_i_arena/tmp'
-
-cd $INSTALL_DIR/'tes_i_arena/tmp'
-7z x $INSTALL_DIR/'tes_i_arena/tmp/Arena106.exe'
-mv $INSTALL_DIR/'tes_i_arena/tmp/ARENA' \
-$INSTALL_DIR/'tes_i_arena/game'
-rm -R $INSTALL_DIR/'tes_i_arena/tmp'
-
-if [ $KEEP_INSTALLERS == 'False' ]; then
-	rm -R $DOWNLOAD_DIR'/tes_i_arena'
-fi
-
-echo '#!/bin/bash
-INSTALL_DIR=$1
-NEBULA_DIR=$2
-rm $HOME/.games_nebula/games/.dosbox/tes_i_arena
-mkdir -p $HOME/.games_nebula/games/.dosbox
-ln -s $INSTALL_DIR/tes_i_arena/game \
-$HOME/.games_nebula/games/.dosbox/tes_i_arena
-python $NEBULA_DIR/launcher_dosbox.py tes_i_arena' > \
-$INSTALL_DIR'/tes_i_arena/start.sh'
-chmod +x $INSTALL_DIR'/tes_i_arena/start.sh'
-
-echo "[autoexec]
-@echo off
-mount C $HOME/.games_nebula/games/.dosbox/tes_i_arena
-c:
-@A -sa:220 -si:5 -sd:1 -ma:220 -mq:5 -md:1 -ssbpdig.adv -msbp1fm.adv
-exit" > $INSTALL_DIR'/tes_i_arena/dosbox_game.conf'
 
 #The Elder Scrolls: Arena

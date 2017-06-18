@@ -1,55 +1,16 @@
 #!/bin/bash
 
-DOWNLOAD_DIR=$1
-INSTALL_DIR=$2
-KEEP_INSTALLERS=$4
+source "$NEBULA_DIR/scripts/shell_functions.sh"
 
-if [ ! -e $DOWNLOAD_DIR'/sfinx' ]; then
-	mkdir -p $DOWNLOAD_DIR'/sfinx'
-	cd $DOWNLOAD_DIR'/sfinx'
-	curl -L -O -C - 'http://scummvm.org/frs/extras/Sfinx/sfinx-en-v1.1.zip'
+get_mylib_distr 'sfinx-en-v1.1.zip' \
+'http://scummvm.org/frs/extras/Sfinx/sfinx-en-v1.1.zip'
+
+7z x -o"$INSTALL_DIR/$GAME_NAME" "$DOWNLOAD_DIR/$GAME_NAME/sfinx-en-v1.1.zip"
+
+mv "$INSTALL_DIR/$GAME_NAME/sfinx-en-v1.1" "$INSTALL_DIR/$GAME_NAME/game"
+
+if [ "$KEEP_INSTALLERS" == 'False' ]; then
+rm -R "$DOWNLOAD_DIR/$GAME_NAME"
 fi
-
-unzip -o $DOWNLOAD_DIR'/sfinx/sfinx-en-v1.1.zip' \
--d $INSTALL_DIR/'sfinx/'
-mv $INSTALL_DIR/'sfinx/sfinx-en-v1.1' $INSTALL_DIR/'sfinx/game'
-
-if [ $KEEP_INSTALLERS == 'False' ]; then
-	rm -R $DOWNLOAD_DIR'/sfinx'
-fi
-
-echo -e '#!/bin/bash
-
-INSTALL_DIR=$1
-NEBULA_DIR=$2
-
-SCUMMVMRC=$INSTALL_DIR/sfinx/scummvmrc
-readarray -t ARRAY <<<"$(cat "$SCUMMVMRC")"
-LENGHT=${#ARRAY[@]}
-
-for i in $(seq 1 $LENGHT); do
-	if [[ ${ARRAY[i]} == "[sfinx]" ]]; then
-		FIRST_LINE=$i
-	fi
-done
-
-cp $HOME/.games_nebula/config/scummvmrc $SCUMMVMRC
-
-for i in $(seq $FIRST_LINE $LENGHT); do
-	echo ${ARRAY[i]} >> "$SCUMMVMRC"
-done
-
-python $NEBULA_DIR/launcher_scummvm.py sfinx sfinx' > \
-$INSTALL_DIR'/sfinx/start.sh'
-chmod +x $INSTALL_DIR'/sfinx/start.sh'
-
-cp $HOME'/.games_nebula/config/scummvmrc' $INSTALL_DIR'/sfinx/'
-
-echo "[sfinx]
-gameid=sfinx
-description=Sfinx (Freeware v1.1/DOS/English)
-path=$INSTALL_DIR/sfinx/game
-savepath=$INSTALL_DIR/sfinx/game" >> \
-$INSTALL_DIR'/sfinx/scummvmrc'
 
 #Sfinx

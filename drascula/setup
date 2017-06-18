@@ -1,59 +1,21 @@
 #!/bin/bash
 
-DOWNLOAD_DIR=$1
-INSTALL_DIR=$2
-KEEP_INSTALLERS=$4
+source "$NEBULA_DIR/scripts/shell_functions.sh"
 
-if [ ! -e $DOWNLOAD_DIR'/drascula' ]; then
-	mkdir -p $DOWNLOAD_DIR'/drascula'
-	cd $DOWNLOAD_DIR'/drascula'
-	curl -L -O -C - \
-	'http://scummvm.org/frs/extras/Drascula_%20The%20Vampire%20Strikes%20Back/drascula-1.0.zip'
-	curl -L -O -C - \
-	'http://scummvm.org/frs/extras/Drascula_%20The%20Vampire%20Strikes%20Back/drascula-audio-2.0.zip'
+get_mylib_distr 'drascula-1.0.zip' \
+'http://scummvm.org/frs/extras/Drascula_%20The%20Vampire%20Strikes%20Back/drascula-1.0.zip'
+
+get_mylib_distr 'drascula-audio-2.0.zip' \
+'http://scummvm.org/frs/extras/Drascula_%20The%20Vampire%20Strikes%20Back/drascula-audio-2.0.zip'
+
+7z x -aoa -o"$INSTALL_DIR/$GAME_NAME/game" "$DOWNLOAD_DIR/$GAME_NAME/drascula-1.0.zip" \
+& proc_timer $! "Extracting drascula-1.0.zip"
+
+7z x -aoa -o"$INSTALL_DIR/$GAME_NAME/game" "$DOWNLOAD_DIR/$GAME_NAME/drascula-audio-2.0.zip" \
+& proc_timer $! "Extracting drascula-audio-2.0.zip"
+
+if [ "$KEEP_INSTALLERS" == 'False' ]; then
+rm -R "$DOWNLOAD_DIR/$GAME_NAME"
 fi
-
-unzip -o $DOWNLOAD_DIR'/drascula/drascula-1.0.zip' \
--d $INSTALL_DIR/'drascula/game'
-unzip -o $DOWNLOAD_DIR'/drascula/drascula-audio-2.0.zip' \
--d $INSTALL_DIR/'drascula/game'
-
-if [ $KEEP_INSTALLERS == 'False' ]; then
-	rm -R $DOWNLOAD_DIR'/drascula'
-fi
-
-echo -e '#!/bin/bash
-
-INSTALL_DIR=$1
-NEBULA_DIR=$2
-
-SCUMMVMRC=$INSTALL_DIR/drascula/scummvmrc
-readarray -t ARRAY <<<"$(cat "$SCUMMVMRC")"
-LENGHT=${#ARRAY[@]}
-
-for i in $(seq 1 $LENGHT); do
-	if [[ ${ARRAY[i]} == "[drascula]" ]]; then
-		FIRST_LINE=$i
-	fi
-done
-
-cp $HOME/.games_nebula/config/scummvmrc $SCUMMVMRC
-
-for i in $(seq $FIRST_LINE $LENGHT); do 
-	echo ${ARRAY[i]} >> "$SCUMMVMRC"
-done
-
-python $NEBULA_DIR/launcher_scummvm.py drascula drascula' > \
-$INSTALL_DIR'/drascula/start.sh'
-chmod +x $INSTALL_DIR'/drascula/start.sh'
-
-cp $HOME'/.games_nebula/config/scummvmrc' $INSTALL_DIR'/drascula/'
-
-echo "[drascula]
-gameid=drascula
-description=Drascula: The Vampire Strikes Back (DOS/English)
-path=$INSTALL_DIR/drascula/game
-savepath=$INSTALL_DIR/drascula/game" >> \
-$INSTALL_DIR'/drascula/scummvmrc'
 
 #Drascula: The Vampire Strikes Back

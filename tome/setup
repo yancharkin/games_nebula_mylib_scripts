@@ -1,54 +1,38 @@
 #!/bin/bash
 
-DOWNLOAD_DIR=$1
-INSTALL_DIR=$2
-KEEP_INSTALLERS=$4
+source "$NEBULA_DIR/scripts/shell_functions.sh"
 
-LINK64='http://te4.org/dl/t-engine/t-engine4-linux64-1.5.0.tar.bz2'
-LINK64_NOMUSIC='http://te4.org/dl/t-engine/t-engine4-linux64-1.5.0-nomusic.tar.bz2'
-LINK32='http://te4.org/dl/t-engine/t-engine4-linux32-1.5.0.tar.bz2'
-LINK32_NOMUSIC='http://te4.org/dl/t-engine/t-engine4-linux32-1.5.0-nomusic.tar.bz2'
+ARCH=$(get_arch i)
 
-if [ ! -f $DOWNLOAD_DIR'/tome/tome.tar.bz2' ]; then
-	mkdir -p $DOWNLOAD_DIR'/tome'
-    
-    VER=$(zenity --list \
-    --hide-header \
-    --title "Tales of Maj'Eyal" \
-    --text "Version to download:" \
-    --column "Version" \
-    "With music" \
-    "Without music")
-    
-    if [ "$VER" == "With music" ]; then
-        if [ $(uname -m) == "x86_64" ]; then
-            curl -L -o $DOWNLOAD_DIR'/tome/tome.tar.bz2' -C - $LINK64
-        else
-            curl -L -o $DOWNLOAD_DIR'/tome/tome.tar.bz2' -C - $LINK32
-        fi
-    fi
-    if [ "$VER" == "Without music" ]; then
-        if [ $(uname -m) == "x86_64" ]; then
-            curl -L -o $DOWNLOAD_DIR'/tome/tome.tar.bz2' -C - $LINK64_NOMUSIC
-        else
-            curl -L -o $DOWNLOAD_DIR'/tome/tome.tar.bz2' -C - $LINK32_NOMUSIC
-        fi
-    fi
-    
+VERSION=$(python2 "$NEBULA_DIR/dialogs.py" list "With music, Without music")
+
+if [ "$VERSION" == "With music" ]; then
+if [ "$ARCH" == "amd64" ]; then
+ARCHIVE='t-engine4-linux64-1.5.0.tar.bz2'
+else
+ARCHIVE='t-engine4-linux32-1.5.0.tar.bz2'
+fi
+else
+if [ "$ARCH" == "amd64" ]; then
+ARCHIVE='t-engine4-linux64-1.5.0-nomusic.tar.bz2'
+else
+ARCHIVE='t-engine4-linux32-1.5.0-nomusic.tar.bz2'
+fi
 fi
 
-mkdir -p $INSTALL_DIR'/tome/game'
-tar --strip-components=1 -xjvf $DOWNLOAD_DIR'/tome/tome.tar.bz2' -C $INSTALL_DIR'/tome/game'
+get_mylib_distr "$ARCHIVE" \
+"http://te4.org/dl/t-engine/$ARCHIVE"
 
-if [ $KEEP_INSTALLERS == 'False' ]; then
-	rm -R $DOWNLOAD_DIR'/tome'
+mkdir -p "$INSTALL_DIR/$GAME_NAME/game"
+tar --strip-components=1 -xjvf "$DOWNLOAD_DIR/$GAME_NAME/$ARCHIVE" -C "$INSTALL_DIR/tome/game" \
+& proc_timer $! "Extracting $ARCHIVE"
+
+if [ "$KEEP_INSTALLERS" == 'False' ]; then
+rm -R "$DOWNLOAD_DIR/$GAME_NAME"
 fi
 
 echo -e '#!/bin/bash
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $DIR/game
-./t-engine' > \
-$INSTALL_DIR'/tome/start.sh'
-chmod +x $INSTALL_DIR'/tome/start.sh'
+cd "$INSTALL_DIR/tome/game"
+./t-engine' > "$START_GN_FILE" && chmod +x "$START_GN_FILE"
 
 #Tales of Maj'Eyal
