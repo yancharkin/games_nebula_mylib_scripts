@@ -1,0 +1,56 @@
+#!/bin/bash
+
+source "$NEBULA_DIR/scripts/shell_functions.sh"
+
+get_mylib_distr 'Kq2vga31c.exe' \
+'http://agdinteractive.com/countdl.php?action=download&game=12'
+
+get_common_file 'AGS.3.4.0.16.Editor.Linux.Pack.zip' \
+'https://github.com/adventuregamestudio/ags/releases/download/v.3.4.0.16/AGS.3.4.0.16.Editor.Linux.Pack.zip'
+
+innoextract "$DOWNLOAD_DIR/$GAME_NAME/Kq2vga31c.exe" -d "$INSTALL_DIR/$GAME_NAME/"
+mv "$INSTALL_DIR/$GAME_NAME/app" "$INSTALL_DIR/$GAME_NAME/game"
+
+7z x -aoa -o"$INSTALL_DIR/$GAME_NAME/game/" \
+"$DOWNLOAD_DIR/_distr/AGS.3.4.0.16.Editor.Linux.Pack.zip"
+mv "$INSTALL_DIR/$GAME_NAME/game/Linux/"* \
+"$INSTALL_DIR/$GAME_NAME/game"
+rm -R "$INSTALL_DIR/$GAME_NAME/game/Linux"
+chmod +x "$INSTALL_DIR/$GAME_NAME/game/ags32"
+chmod +x "$INSTALL_DIR/$GAME_NAME/game/ags64"
+
+echo "[misc]
+gamecolordepth=32
+titletext=King's Quest II
+[graphics]
+defaultdriver=D3D9
+driver=D3D9
+screen_def = explicit
+screen_width = 800
+screen_height = 600
+windowed = 1" > "$INSTALL_DIR/$GAME_NAME/game/acsetup.cfg"
+
+echo -e '#!/bin/sh
+SCRIPTPATH="$(dirname "$(readlink -f $0)")"
+
+if test "x$@" = "x-h" -o "x$@" = "x--help"
+  then
+    echo "Usage:" "$(basename "$(readlink -f $0)")" "[<ags options>]"
+    echo ""
+fi
+
+if test $(uname -m) = x86_64
+  then
+    ALLEGRO_MODULES="$SCRIPTPATH/game/lib64" "$SCRIPTPATH/game/ags64" "$@" "$SCRIPTPATH/game/"
+  else
+    ALLEGRO_MODULES="$SCRIPTPATH/game/lib32" "$SCRIPTPATH/game/ags32" "$@" "$SCRIPTPATH/game/"
+fi' > "$START_GN_FILE" && chmod +x "$START_GN_FILE"
+
+echo -e '#!/bin/bash
+python2 "$NEBULA_DIR/launcher_native.py" '"$GAME_NAME" > "$START_FILE" && chmod +x "$START_FILE"
+
+if [ "$KEEP_INSTALLERS" == 'False' ]; then
+rm -R "$DOWNLOAD_DIR/$GAME_NAME"
+fi
+
+#King's Quest II Remake
