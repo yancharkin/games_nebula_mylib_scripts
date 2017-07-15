@@ -3,7 +3,7 @@
 source "$NEBULA_DIR/scripts/shell_functions.sh"
 
 get_mylib_distr 'spelunky_classic_hd_linux.7z' \
-'https://github.com/yancharkin/SpelunkyClassicHD/releases/download/1.1.1/spelunky_classic_hd_linux.7z'
+'https://github.com/yancharkin/SpelunkyClassicHD/releases/download/1.1.2/spelunky_classic_hd_linux.7z'
 
 get_mylib_distr 'translations.zip' \
 'https://github.com/yancharkin/SpelunkyClassicHDTranslations/archive/master.zip'
