@@ -1,0 +1,39 @@
+#!/bin/bash
+
+source "$NEBULA_DIR/scripts/shell_functions.sh"
+
+if [ $(uname -m) == "x86_64" ]; then
+ARCH='64'
+else
+ARCH='32'
+fi
+
+if [ ! -f "$DOWNLOAD_DIR/$GAME_NAME/"* ]; then
+mkdir -p "$DOWNLOAD_DIR/$GAME_NAME"
+humblebundle --username '_email_' --password '_password_' \
+--download 'botanicula' --type '.gz' --arch $ARCH --path "$DOWNLOAD_DIR/$GAME_NAME/" \
+& proc_timer $! "Downloading 'Botanicula'"
+fi
+
+INSTALLER=$(ls $DOWNLOAD_DIR/$GAME_NAME)
+
+tar -xzvf "$DOWNLOAD_DIR/$GAME_NAME/$INSTALLER" -C "$INSTALL_DIR/$GAME_NAME/" \
+& proc_timer $! "Installing 'Botanicula'"
+
+mv "$INSTALL_DIR/$GAME_NAME/botanicula" "$INSTALL_DIR/$GAME_NAME/game"
+
+if [ $KEEP_INSTALLERS == 'False' ]; then
+rm -R "$DOWNLOAD_DIR/$GAME_NAME"
+fi
+
+echo -e '#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+$DIR/game/bin/adl \
+$DIR/game/bin/BotaniculaLinux-app.xml' > \
+"$START_GN_FILE" && chmod +x "$START_GN_FILE"
+
+echo -e '#!/bin/bash
+python2 "$NEBULA_DIR/launcher_native.py" '"$GAME_NAME" > \
+"$START_FILE" && chmod +x "$START_FILE"
+
+#Botanicula

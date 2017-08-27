@@ -1,0 +1,42 @@
+#!/bin/bash
+
+source "$NEBULA_DIR/scripts/shell_functions.sh"
+
+INSTALL_DIR_WIN=$(echo Z:$INSTALL_DIR | sed -e 's=/=\\=g')
+
+if [ ! -f "$DOWNLOAD_DIR/$GAME_NAME/"* ]; then
+mkdir -p "$DOWNLOAD_DIR/$GAME_NAME"
+humblebundle --username '_email_' --password '_password_' \
+--platform windows --download 'ageofwondersshadowmagic' --path "$DOWNLOAD_DIR/$GAME_NAME/" \
+& proc_timer $! "Downloading 'Age of Wonders: Shadowmagic'"
+fi
+
+INSTALLER=$(ls $DOWNLOAD_DIR/$GAME_NAME)
+
+cp "$DOWNLOAD_DIR/$GAME_NAME/$INSTALLER" \
+"$INSTALL_DIR/$GAME_NAME/"
+
+mkdir -p "$INSTALL_DIR/$GAME_NAME/game"
+
+if [ $WINE_PATH == "wine" ]; then
+export WINELOADER="wine"
+export WINEPREFIX="$HOME/.games_nebula/wine_prefix"
+else
+export WINE="$WINE_PATH/bin/wine"
+export WINELOADER="$WINE_PATH/bin/wine"
+export WINESERVER="$WINE_PATH/bin/wineserver"
+export WINEDLLPATH="$WINE_PATH/lib"
+export WINEPREFIX="$HOME/.games_nebula/wine_prefix"
+fi
+
+$WINELOADER "$INSTALL_DIR/$GAME_NAME/$INSTALLER" /NCRC /S /D=\
+"$INSTALL_DIR_WIN\\$GAME_NAME\game" \
+& proc_timer $! "Installing 'Age of Wonders: Shadowmagic'"
+
+rm "$INSTALL_DIR/$GAME_NAME/$INSTALLER"
+
+if [ $KEEP_INSTALLERS == 'False' ]; then
+rm -R "$DOWNLOAD_DIR/$GAME_NAME"
+fi
+
+#Age of Wonders: Shadow Magic

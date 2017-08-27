@@ -1,0 +1,24 @@
+#!/bin/bash
+
+source "$NEBULA_DIR/scripts/shell_functions.sh"
+
+if [ ! -f "$DOWNLOAD_DIR/$GAME_NAME/"* ]; then
+mkdir -p "$DOWNLOAD_DIR/$GAME_NAME"
+humblebundle --username '_email_' --password '_password_' \
+--platform windows --download 'heroesofmightandmagic2_goldedition' --path "$DOWNLOAD_DIR/$GAME_NAME/" \
+& proc_timer $! "Downloading 'HoMM2'"
+fi
+
+INSTALLER=$(ls $DOWNLOAD_DIR/$GAME_NAME)
+
+mkdir -p $INSTALL_DIR/$GAME_NAME/tmp
+innoextract --exclude-temp "$DOWNLOAD_DIR/$GAME_NAME/$INSTALLER" -d "$INSTALL_DIR/$GAME_NAME/tmp" \
+& proc_timer $! "Installing 'HoMM2'"
+mv "$INSTALL_DIR/$GAME_NAME/tmp/app" "$INSTALL_DIR/$GAME_NAME/game"
+rm -R "$INSTALL_DIR/$GAME_NAME/tmp"
+
+if [ $KEEP_INSTALLERS == 'False' ]; then
+rm -R "$DOWNLOAD_DIR/$GAME_NAME"
+fi
+
+#Heroes of Might and Magic II Gold

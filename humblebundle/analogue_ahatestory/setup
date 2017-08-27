@@ -1,0 +1,23 @@
+#!/bin/bash
+
+source "$NEBULA_DIR/scripts/shell_functions.sh"
+
+if [ ! -f "$DOWNLOAD_DIR/$GAME_NAME/"* ]; then
+mkdir -p "$DOWNLOAD_DIR/$GAME_NAME"
+humblebundle --username '_email_' --password '_password_' \
+--download 'analogue_ahatestory' --path "$DOWNLOAD_DIR/$GAME_NAME/" \
+& proc_timer $! "Downloading 'Analogue A Hate Story'"
+fi
+
+INSTALLER=$(ls $DOWNLOAD_DIR/$GAME_NAME)
+7z x -aoa -o"$INSTALL_DIR/$GAME_NAME/" "$DOWNLOAD_DIR/$GAME_NAME/$INSTALLER" \
+& proc_timer $! "Installing 'Analogue A Hate Story'"
+
+mv "$INSTALL_DIR/$GAME_NAME/Analogue A Hate Story" "$INSTALL_DIR/$GAME_NAME/game"
+rm -R "$INSTALL_DIR/$GAME_NAME/__MACOSX"
+
+if [ $KEEP_INSTALLERS == 'False' ]; then
+rm -R "$DOWNLOAD_DIR/$GAME_NAME"
+fi
+
+#Analogue: A Hate Story
