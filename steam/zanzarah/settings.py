@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- Mode: Python; coding: utf-8 -*-
 
+# HiRes/Language fix from here: http://forum.daedalic.de/viewtopic.php?f=273&t=5949
+
 import sys, os
 from struct import pack, unpack
 import PIL
