@@ -1,0 +1,52 @@
+#!/bin/bash
+
+source "$NEBULA_DIR/scripts/shell_functions.sh"
+
+export WINEPREFIX="$HOME/.games_nebula/wine_prefix"
+if [ $WINE_PATH == "wine" ]; then
+export WINELOADER=$WINE_PATH
+else
+export WINE="$WINE_PATH/bin/wine"
+export WINELOADER="$WINE_PATH/bin/wine"
+export WINESERVER="$WINE_PATH/bin/wineserver"
+export WINEDLLPATH="$WINE_PATH/lib"
+fi
+
+if [ ! -f "$DOWNLOAD_DIR/$GAME_NAME/zanzarah.7z" ]; then
+mkdir -p "$DOWNLOAD_DIR/$GAME_NAME"
+cd "$WINEPREFIX/drive_c/Program Files/Steam"
+$WINELOADER ./Steam.exe -silent -applaunch 384570 &
+while [ ! -d "$WINEPREFIX/drive_c/Program Files/Steam/steamapps/downloading/384570" ]; do
+echo "Waiting..."
+sleep 1
+done
+while [ -d "$WINEPREFIX/drive_c/Program Files/Steam/steamapps/downloading/384570" ]; do
+echo "Installing..."
+sleep 1
+done
+$WINELOADER ./Steam.exe -shutdown
+mv "$WINEPREFIX/drive_c/Program Files/Steam/steamapps/common/ZanZarah" "$INSTALL_DIR/$GAME_NAME/game"
+if [ $KEEP_INSTALLERS == "True" ]; then
+7z a "$DOWNLOAD_DIR/$GAME_NAME/zanzarah.7z" "$INSTALL_DIR/$GAME_NAME/game/" \
+& proc_timer $! "Compressing 'zanzarah.7z'"
+fi
+else
+7z x -aoa -o"$INSTALL_DIR/$GAME_NAME/" "$DOWNLOAD_DIR/$GAME_NAME/zanzarah.7z" \
+& proc_timer $! "Extracting 'zanzarah.7z'"
+fi
+rm -f "$HOME/.games_nebula/wine_prefix/drive_c/Program Files/Steam/steamapps/appmanifest_384570.acf"
+
+if [ ! -f "$DOWNLOAD_DIR/$GAME_NAME/zanzarah_languages.7z" ]; then
+mkdir -p "$DOWNLOAD_DIR/$GAME_NAME"
+megadl 'https://mega.nz/#!G1J0GK7I!4Ex5HE3jgY49bm135rhp0KoxpZnjT8yZ2HBpDor68e0' \
+--path "$DOWNLOAD_DIR/$GAME_NAME/" \
+& proc_timer $! "Downloading language pack"
+fi
+
+7z x -aoa "$DOWNLOAD_DIR/$GAME_NAME/zanzarah_languages.7z" -o\
+"$INSTALL_DIR/$GAME_NAME/game/" \
+& proc_timer $! "Extracting language pack"
+
+python2 "$INSTALL_DIR/$GAME_NAME/settings.py" "$INSTALL_DIR/$GAME_NAME/game/System/zanthp.exe" 800 600
+
+#ZanZarah: The Hidden Portal
