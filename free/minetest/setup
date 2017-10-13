@@ -1,0 +1,25 @@
+#!/bin/bash
+
+source "$NEBULA_DIR/scripts/shell_functions.sh"
+
+if [ ! -f "$DOWNLOAD_DIR/$GAME_NAME/minetest.7z" ]; then
+mkdir -p "$DOWNLOAD_DIR/$GAME_NAME"
+megadl 'https://mega.nz/#!315xmBiY!R8Jdh3aD4tsJeKmk9sLP6XSOknekSOH58wOkECpKy84' \
+--path "$DOWNLOAD_DIR/$GAME_NAME/" \
+& proc_timer $! "Downloading 'Minetest'"
+fi
+
+7z x -o"$INSTALL_DIR/$GAME_NAME/" "$DOWNLOAD_DIR/$GAME_NAME/minetest.7z" \
+& proc_timer $! "Installing 'Minetest'"
+
+if [ $KEEP_INSTALLERS == 'False' ]; then
+rm -R "$DOWNLOAD_DIR/$GAME_NAME"
+fi
+
+echo -e '#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$DIR/lib"
+"$DIR/bin/minetest"' > \
+"$INSTALL_DIR/$GAME_NAME/game/start" && chmod +x "$INSTALL_DIR/$GAME_NAME/game/start"
+
+#Minetest
