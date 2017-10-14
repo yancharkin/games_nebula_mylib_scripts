@@ -1,0 +1,45 @@
+#!/bin/bash
+
+source "$NEBULA_DIR/scripts/shell_functions.sh"
+
+get_mylib_distr 'wurmclient.jnlp' \
+'https://www.wurmonline.com/client/wurmclient.jnlp'
+get_mylib_distr 'graphics.jar' 'http://www.wurmonline.com/packs/graphics.jar'
+get_mylib_distr 'pmk.jar' 'http://www.wurmonline.com/packs/pmk.jar'
+get_mylib_distr 'sound.jar' 'http://www.wurmonline.com/packs/sound.jar'
+
+get_java_i586
+
+mkdir -p "$INSTALL_DIR/$GAME_NAME/game/packs"
+cp "$DOWNLOAD_DIR/$GAME_NAME/wurmclient.jnlp" "$INSTALL_DIR/$GAME_NAME/game/"
+cp "$DOWNLOAD_DIR/$GAME_NAME/graphics.jar" "$INSTALL_DIR/$GAME_NAME/game/packs/" \
+& proc_timer $! "Copying graphics.jar"
+cp "$DOWNLOAD_DIR/$GAME_NAME/pmk.jar" "$INSTALL_DIR/$GAME_NAME/game/packs/" \
+& proc_timer $! "Copying pmk.jar"
+cp "$DOWNLOAD_DIR/$GAME_NAME/sound.jar" "$INSTALL_DIR/$GAME_NAME/game/packs/" \
+& proc_timer $! "Copying sound.jar"
+
+if [ "$KEEP_INSTALLERS" == 'False' ]; then
+rm -R "$DOWNLOAD_DIR/$GAME_NAME"
+fi
+
+mkdir -p "/home/$USER/.java/.userPrefs/com/wurmonline/client/"
+echo -e '<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE map SYSTEM "http://java.sun.com/dtd/preferences.dtd">
+<map MAP_XML_VERSION="1.0">
+  <entry key="optional_packs2" value="[base, graphics, sound]"/>
+  <entry key="wurm_dir" value="'"$INSTALL_DIR/$GAME_NAME/game"'"/>
+  <entry key="wurm_user" value=""/>
+</map>' > "/home/$USER/.java/.userPrefs/com/wurmonline/client/prefs.xml"
+
+echo -e 'Wurm installed at '"$(date "+%a %b %d %T %Z %Y")"'
+Delete this file if you want to change installation directory' > \
+"$INSTALL_DIR/$GAME_NAME/game/wurm.install"
+
+echo -e '#!/bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+"$DIR/../jre/bin/javaws" "$DIR/wurmclient.jnlp"' > \
+"$INSTALL_DIR/$GAME_NAME/game/start"
+chmod +x "$INSTALL_DIR/$GAME_NAME/game/start"
+
+#Wurm Online
