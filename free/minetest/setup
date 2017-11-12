@@ -4,7 +4,7 @@ source "$NEBULA_DIR/scripts/shell_functions.sh"
 
 if [ ! -f "$DOWNLOAD_DIR/$GAME_NAME/minetest.7z" ]; then
 mkdir -p "$DOWNLOAD_DIR/$GAME_NAME"
-megadl 'https://mega.nz/#!315xmBiY!R8Jdh3aD4tsJeKmk9sLP6XSOknekSOH58wOkECpKy84' \
+megadl 'https://mega.nz/#!nopCTa5J!57DJ0nJERA-PeLYg7cCagAsk0sM0aO0w8cFuZ8ymyGE' \
 --path "$DOWNLOAD_DIR/$GAME_NAME/" \
 & proc_timer $! "Downloading 'Minetest'"
 fi
