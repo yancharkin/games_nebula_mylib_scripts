@@ -1,0 +1,1 @@
+Example scripts for installing games from Steam. Before using scripts you have to configure Steam client. If using wine, steam should be installed in "$HOME/.games_nebula/wine_prefix" wineprefix.

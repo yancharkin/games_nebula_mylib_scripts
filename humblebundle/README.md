@@ -1,0 +1,1 @@
+Example scripts for installing games from Humble Bundle using [this tool](https://github.com/MestreLion/humblebundle). Before using scripts you have to insert valid username and password.
