@@ -1,13 +1,14 @@
-#!/usr/bin/env python2
-# -*- Mode: Python; coding: utf-8 -*-
-
 import sys, os
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
-import ConfigParser
 import gettext
 import imp
+
+try:
+    from ConfigParser import ConfigParser as ConfigParser
+except:
+    from configparser import ConfigParser as ConfigParser
 
 nebula_dir = os.getenv('NEBULA_DIR')
 
@@ -29,7 +30,7 @@ class GUI:
     def config_load(self):
 
         config_file = current_dir + '/game/acsetup.cfg'
-        config_parser = ConfigParser.ConfigParser()
+        config_parser = ConfigParser()
         config_parser.read(config_file)
 
         if not config_parser.has_section('graphics'):
@@ -37,8 +38,8 @@ class GUI:
             self.screen_height = 600
 
             config_parser.add_section('graphics')
-            config_parser.set('graphics', 'screen_width', self.screen_width)
-            config_parser.set('graphics', 'screen_height', self.screen_height)
+            config_parser.set('graphics', 'screen_width', str(self.screen_width))
+            config_parser.set('graphics', 'screen_height', str(self.screen_height))
 
             new_config_file = open(config_file, 'w')
             config_parser.write(new_config_file)
@@ -51,11 +52,11 @@ class GUI:
     def config_save(self):
 
         config_file = current_dir + '/game/acsetup.cfg'
-        config_parser = ConfigParser.ConfigParser()
+        config_parser = ConfigParser()
         config_parser.read(config_file)
 
-        config_parser.set('graphics', 'screen_width', self.screen_width)
-        config_parser.set('graphics', 'screen_height', self.screen_height)
+        config_parser.set('graphics', 'screen_width', str(self.screen_width))
+        config_parser.set('graphics', 'screen_height', str(self.screen_height))
 
         new_config_file = open(config_file, 'w')
         config_parser.write(new_config_file)

@@ -4,7 +4,7 @@ source "$NEBULA_DIR/scripts/shell_functions.sh"
 
 ARCH=$(get_arch i)
 
-VERSION=$(python2 "$NEBULA_DIR/dialogs.py" list "With music, Without music")
+VERSION=$(python "$NEBULA_DIR/dialogs.py" list "With music, Without music")
 
 if [ "$VERSION" == "With music" ]; then
 if [ "$ARCH" == "amd64" ]; then

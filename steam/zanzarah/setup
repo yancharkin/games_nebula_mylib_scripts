@@ -47,6 +47,6 @@ fi
 "$INSTALL_DIR/$GAME_NAME/game/" \
 & proc_timer $! "Extracting language pack"
 
-python2 "$INSTALL_DIR/$GAME_NAME/settings.py" "$INSTALL_DIR/$GAME_NAME/game/System/zanthp.exe" 800 600
+python "$INSTALL_DIR/$GAME_NAME/settings.py" "$INSTALL_DIR/$GAME_NAME/game/System/zanthp.exe" 800 600
 
 #ZanZarah: The Hidden Portal

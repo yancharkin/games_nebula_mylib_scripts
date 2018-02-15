@@ -2,7 +2,7 @@
 
 source "$NEBULA_DIR/scripts/shell_functions.sh"
 
-VERSION=$(python2 "$NEBULA_DIR/dialogs.py" list \
+VERSION=$(python "$NEBULA_DIR/dialogs.py" list \
 "CD DOS Version (English UK), \
 Floppy DOS Version (English UK), \
 CD DOS Version (English US), \
@@ -89,7 +89,7 @@ fi
 if [ "$LANG" == "uk" ]; then
 
 echo -e '#!/bin/bash
-python2 "$NEBULA_DIR/launcher_scummvm.py" dreamweb dreamweb' > \
+python "$NEBULA_DIR/launcher_scummvm.py" dreamweb dreamweb' > \
 "$START_FILE" && chmod +x "$START_FILE"
 
 echo -e "[dreamweb]
@@ -98,7 +98,7 @@ gameid=dreamweb" > "$INSTALL_DIR/$GAME_NAME/scummvmrc"
 else
 
 echo -e '#!/bin/bash
-python2 "$NEBULA_DIR/launcher_scummvm.py" dreamweb '"dreamweb-cd-$LANG" > \
+python "$NEBULA_DIR/launcher_scummvm.py" dreamweb '"dreamweb-cd-$LANG" > \
 "$START_FILE" && chmod +x "$START_FILE"
 
 echo -e "[dreamweb-cd-$LANG]

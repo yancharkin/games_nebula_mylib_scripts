@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# -*- Mode: Python; coding: utf-8 -*-
-
 # HiRes/Language fix from here: http://forum.daedalic.de/viewtopic.php?f=273&t=5949
 
 import sys, os
@@ -11,9 +8,13 @@ from PIL import Image
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
-import ConfigParser
 import gettext
 import imp
+
+try:
+    from ConfigParser import ConfigParser as ConfigParser
+except:
+    from configparser import ConfigParser as ConfigParser
 
 nebula_dir = os.getenv('NEBULA_DIR')
 
@@ -37,9 +38,16 @@ def patch_exe(exe_path, RES_X, RES_Y):
 
     if not os.path.exists(exe_path + '.original'):
         os.system('mv ' + exe_path + ' ' + exe_path + '.original')
-
-    resX = pack('<L', RES_X).encode('hex')
-    resY = pack('<L', RES_Y).encode('hex')
+    
+    if sys.version_info[0] == 2:
+        resX = pack('<L', RES_X).encode('hex')
+        resY = pack('<L', RES_Y).encode('hex')
+        resX2Y = pack('<f', RES_Y/float(RES_X)).encode('hex')
+    elif sys.version_info[0] == 3:
+        import codecs
+        resX = codecs.encode(pack('<L', RES_X), 'hex_codec').decode('utf-8')
+        resY = codecs.encode(pack('<L', RES_Y), 'hex_codec').decode('utf-8')
+        resX2Y = codecs.encode(pack('<f', RES_Y/float(RES_X)), 'hex_codec').decode('utf-8')
 
     ratios,offsets = [
         round(1280/1024.0, 2),
@@ -68,18 +76,26 @@ def patch_exe(exe_path, RES_X, RES_Y):
     p2 = [0x01128c, 'e90e2c1900']
     p3 = [0x0f5c43, '59595968'+resY+'68'+resX+'5233c9894c2414894c2410b820000000']
     p4 = [0x1a3e9f, '8d732c8bcec7442408'+resX+'c744240c'+resY+'e9d8d3e6ff']
-    p5 = [0x1a5fcc, pack('<f', RES_Y/float(RES_X)).encode('hex')]
-    p6 = [0x1a6508, pack('<f', RES_Y/float(RES_X)).encode('hex')]
+    p5 = [0x1a5fcc, resX2Y]
+    p6 = [0x1a6508, resX2Y]
     p7 = [0x019430, 'e987aa1800' + '90'*26]
     p8 = [0x1a3ebc, 'c74108'+resX+'c7410c'+resY+'c7411020000000c74114000000005ec20400']
     skills,icon,gauge,bars = [0x1a60ac],[0x1a7278, 0x1a727c],[0x1a7290, 0x1a7294],[0x1a6e6c, 0x1a72ac]
-
-    with open(exe_path + '.original', 'rb') as f: blob = f.read()
-    for p in [p1, p2, p3, p4, p5, p6, p7, p8]: blob = blob[:p[0]] + p[1].decode('hex') + blob[p[0]+len(p[1].decode('hex')):]
-    for i in (skills+icon+gauge+bars):
-        t = unpack('<f', blob[i:i+4])[0]
-        blob = blob[:i] + pack('<f', t-t*r) + blob[i+4:]
-    with open(exe_path, 'wb') as f: f.write(blob)
+    
+    if sys.version_info[0] == 2:
+        with open(exe_path + '.original', 'rb') as f: blob = f.read()
+        for p in [p1, p2, p3, p4, p5, p6, p7, p8]: blob = blob[:p[0]] + p[1].decode('hex') + blob[p[0]+len(p[1].decode('hex')):]
+        for i in (skills+icon+gauge+bars):
+            t = unpack('<f', blob[i:i+4])[0]
+            blob = blob[:i] + pack('<f', t-t*r) + blob[i+4:]
+        with open(exe_path, 'wb') as f: f.write(blob)
+    elif sys.version_info[0] == 3:
+        with open(exe_path + '.original', 'rb') as f: blob = f.read()
+        for p in [p1, p2, p3, p4, p5, p6, p7, p8]: blob = blob[:p[0]] + codecs.decode(p[1], 'hex_codec') + blob[p[0]+len(codecs.decode(p[1], 'hex_codec')):]
+        for i in (skills+icon+gauge+bars):
+            t = unpack('<f', blob[i:i+4])[0]
+            blob = blob[:i] + pack('<f', t-t*r) + blob[i+4:]
+        with open(exe_path, 'wb') as f: f.write(blob)
 
     tmp_list = exe_path.split('/')
     del tmp_list[-1]
@@ -103,7 +119,7 @@ def scale_images(images_dir, RES_X, RES_Y):
 
         image = image.resize((new_image_width, new_image_height), PIL.Image.ANTIALIAS)
         new_image = Image.new('RGB', (RES_X, RES_Y), 0)
-        offset = ((RES_X - new_image_width)/2, (RES_Y - new_image_height)/2)
+        offset = (int((RES_X - new_image_width)/2), int((RES_Y - new_image_height)/2))
         new_image.paste(image, offset)
 
         new_image.save(images_dir + image_name)
@@ -120,7 +136,7 @@ class GUI:
     def config_load(self):
 
         config_file = current_dir + '/settings.ini'
-        config_parser = ConfigParser.ConfigParser()
+        config_parser = ConfigParser()
         config_parser.read(config_file)
 
         if not config_parser.has_section('Settings'):
@@ -129,9 +145,9 @@ class GUI:
             self.custom_height = 600
 
             config_parser.add_section('Settings')
-            config_parser.set('Settings', 'language', self.language)
-            config_parser.set('Settings', 'custom_width', self.custom_width)
-            config_parser.set('Settings', 'custom_height', self.custom_height)
+            config_parser.set('Settings', 'language', str(self.language))
+            config_parser.set('Settings', 'custom_width', str(self.custom_width))
+            config_parser.set('Settings', 'custom_height', str(self.custom_height))
 
             new_config_file = open(config_file, 'w')
             config_parser.write(new_config_file)
@@ -145,12 +161,12 @@ class GUI:
     def config_save(self):
 
         config_file = current_dir + '/settings.ini'
-        config_parser = ConfigParser.ConfigParser()
+        config_parser = ConfigParser()
         config_parser.read(config_file)
 
-        config_parser.set('Settings', 'language', self.language)
-        config_parser.set('Settings', 'custom_width', self.custom_width)
-        config_parser.set('Settings', 'custom_height', self.custom_height)
+        config_parser.set('Settings', 'language', str(self.language))
+        config_parser.set('Settings', 'custom_width', str(self.custom_width))
+        config_parser.set('Settings', 'custom_height', str(self.custom_height))
 
         new_config_file = open(config_file, 'w')
         config_parser.write(new_config_file)
