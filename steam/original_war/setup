@@ -1,0 +1,40 @@
+#!/bin/bash
+
+source "$NEBULA_DIR/scripts/shell_functions.sh"
+
+export WINEPREFIX="$HOME/.games_nebula/wine_prefix"
+if [ $WINE_PATH == "wine" ]; then
+    export WINELOADER=$WINE_PATH
+else
+    export WINE="$WINE_PATH/bin/wine"
+    export WINELOADER="$WINE_PATH/bin/wine"
+    export WINESERVER="$WINE_PATH/bin/wineserver"
+    export WINEDLLPATH="$WINE_PATH/lib"
+fi
+
+if [ ! -f "$DOWNLOAD_DIR/$GAME_NAME/original_war.7z" ]; then
+    mkdir -p "$DOWNLOAD_DIR/$GAME_NAME"
+    cd "$WINEPREFIX/drive_c/Program Files/Steam"
+    $WINELOADER ./Steam.exe -silent -applaunch 235320 &
+    while [ ! -d "$WINEPREFIX/drive_c/Program Files/Steam/steamapps/downloading/235320" ]; do
+        echo "Waiting..."
+        sleep 1
+    done
+    while [ -d "$WINEPREFIX/drive_c/Program Files/Steam/steamapps/downloading/235320" ]; do
+        echo "Installing..."
+        sleep 1
+    done
+    $WINELOADER ./Steam.exe -shutdown
+    mv "$WINEPREFIX/drive_c/Program Files/Steam/steamapps/common/Original War" "$INSTALL_DIR/original_war/game"
+    if [ $KEEP_INSTALLERS == "True" ]; then
+        7z a "$DOWNLOAD_DIR/$GAME_NAME/original_war.7z" "$INSTALL_DIR/$GAME_NAME/game/" \
+        & proc_timer $! "Compressing 'original_war.7z'"
+    fi
+else
+    7z x -aoa -o"$INSTALL_DIR/$GAME_NAME/" "$DOWNLOAD_DIR/$GAME_NAME/original_war.7z" \
+    & proc_timer $! "Extracting 'original_war.7z'"
+fi
+
+rm -f "$HOME/.games_nebula/wine_prefix/drive_c/Program Files/Steam/steamapps/appmanifest_235320.acf" > /dev/null 2>&1
+
+#Original War
