@@ -146,7 +146,7 @@ class GUI:
         self.checkbutton_custom_res.connect('toggled', self.cb_checkbutton_custom_res)
 
         self.entry_width = Gtk.Entry(
-            placeholder_text = _("Widht"),
+            placeholder_text = _("Width"),
             no_show_all = True,
             max_length = 4,
             max_width_chars = 4,
@@ -171,7 +171,7 @@ class GUI:
             label = _("Same resolution"),
             active = self.same_res,
             tooltip_text = _("Makes the menus and videos use the same resolution\n" + \
-            "as the game instead of 800x600 and 640x480)")
+            "as the game instead of 800x600 and 640x480")
             )
 
         self.checkbutton_same_res.connect('toggled', self.cb_checkbutton_same_res)
