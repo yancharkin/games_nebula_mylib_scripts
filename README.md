@@ -1,4 +1,4 @@
-# Scripts for ['Games Nebula'](https://github.com/yancharkin/games_nebula) (non-GOG games)
+# Scripts for 'Games Nebula' (non-GOG games)
 
 Minimal installation script should download and unpack (or install) game and contain game name on the last (commented) line. It's possible to use any utilities, but I wrote few function that I find optimal for the task.
 
