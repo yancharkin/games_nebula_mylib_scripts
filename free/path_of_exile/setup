@@ -1,0 +1,30 @@
+#!/bin/bash
+
+source "$NEBULA_DIR/scripts/shell_functions.sh"
+
+get_mylib_distr 'PathOfExileInstaller.exe' \
+'https://www.pathofexile.com/downloads/PathOfExileInstaller.exe'
+
+export WINEPREFIX="$INSTALL_DIR/$GAME_NAME/wine_prefix"
+
+if [ "$WINE_PATH" == "wine" ]; then
+    export WINELOADER="$WINE_PATH"
+else
+    export WINE="$WINE_PATH/bin/wine"
+    export WINELOADER="$WINE_PATH/bin/wine"
+    export WINESERVER="$WINE_PATH/bin/wineserver"
+    export WINEDLLPATH="$WINE_PATH/lib"
+fi
+
+"$WINELOADER" "$DOWNLOAD_DIR/$GAME_NAME/PathOfExileInstaller.exe" -s
+
+ln -s "$WINEPREFIX/drive_c/Program Files/Grinding Gear Games/Path of Exile/" \
+"$INSTALL_DIR/$GAME_NAME/game"
+
+if [ "$KEEP_INSTALLERS" == 'False' ]; then
+    rm -R "$DOWNLOAD_DIR/$GAME_NAME"
+fi
+
+"$WINELOADER" "$WINEPREFIX/drive_c/Program Files/Grinding Gear Games/Path of Exile/PathOfExile.exe"
+
+#Path of Exile
