@@ -1,0 +1,17 @@
+#!/bin/bash
+
+source "${NEBULA_DIR}/scripts/shell_functions.sh"
+
+LINK=$(curl -s "https://api.github.com/repos/flareteam/flare-game/releases/latest" \
+    | grep browser_download_url | grep linux | cut -d '"' -f 4)
+get_mylib_distr 'flare.tar.gz' "${LINK}"
+
+mkdir -p "${INSTALL_DIR}/${GAME_NAME}/game"
+tar -xvf "${DOWNLOAD_DIR}/${GAME_NAME}/flare.tar.gz" -C \
+    "${INSTALL_DIR}/${GAME_NAME}/game" --strip-components=1
+
+if [ "${KEEP_INSTALLERS}" == 'False' ]; then
+    rm -R "${DOWNLOAD_DIR}/${GAME_NAME}"
+fi
+
+#Flare
