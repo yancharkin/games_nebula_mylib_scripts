@@ -1,26 +1,36 @@
 #!/bin/bash
 
-source "$NEBULA_DIR/scripts/shell_functions.sh"
+source "${NEBULA_DIR}/scripts/shell_functions.sh"
 
-get_mylib_distr 'spelunky_classic_hd_linux.7z' \
-'https://github.com/yancharkin/SpelunkyClassicHD/releases/download/1.1.3/spelunky_classic_hd_linux.7z'
+VERSION=$(python "${NEBULA_DIR}/dialogs.py" list "i386, i386-yyc, HTML5 i386, HTML5 amd64")
 
-get_mylib_distr 'translations.zip' \
-'https://github.com/yancharkin/SpelunkyClassicHDTranslations/archive/master.zip'
+if [[ "${VERSION}" == *"i386"* ]] && [[ "${VERSION}" != *"HTML5"* ]]; then
+    echo "i386"
+    DIST_NAME="spelunky_classic_hd-linux-${VERSION}.zip"
+    DOWNLOAD_URL=$(curl -s 'https://api.github.com/repos/yancharkin/SpelunkyClassicHD/releases/latest' | grep browser_download_url | grep linux-${VERSION}.zip | cut -d '"' -f 4)
+    get_mylib_distr "${DIST_NAME}" "${DOWNLOAD_URL}"
+    7z x -aoa -o"${INSTALL_DIR}/${GAME_NAME}/game" "${DOWNLOAD_DIR}/${GAME_NAME}/${DIST_NAME}"
+else
+    if [[ "${VERSION}" == *"amd64"* ]]; then
+        DIST_NAME="spelunky_classic_hd_html5-linux-x86_64.AppImage"
+        DOWNLOAD_URL=$(curl -s 'https://api.github.com/repos/yancharkin/SpelunkyClassicHDhtml5/releases/latest' | grep browser_download_url | grep linux-x86_64.AppImage | cut -d '"' -f 4)
+    elif [[ "${VERSION}" == *"i386"* ]]; then
+        DIST_NAME="spelunky_classic_hd_html5-linux-i386.AppImage"
+        DOWNLOAD_URL=$(curl -s 'https://api.github.com/repos/yancharkin/SpelunkyClassicHDhtml5/releases/latest' | grep browser_download_url | grep linux-i386.AppImage | cut -d '"' -f 4)
+    fi
+    get_mylib_distr "${DIST_NAME}" "${DOWNLOAD_URL}"
+    mkdir -p "${INSTALL_DIR}/${GAME_NAME}/game"
+    cp "${DOWNLOAD_DIR}/${GAME_NAME}/${DIST_NAME}" "${INSTALL_DIR}/${GAME_NAME}/game/"
+    {
+        echo "#!/bin/bash"
+        echo 'DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"'
+        echo '${DIR}/'"${DIST_NAME}"
+    } > "${INSTALL_DIR}/${GAME_NAME}/game/spelunky"
+    chmod +x "${INSTALL_DIR}/${GAME_NAME}/game/spelunky"
+fi
 
-7z x -aoa -o"$INSTALL_DIR/$GAME_NAME/game" \
-"$DOWNLOAD_DIR/$GAME_NAME/spelunky_classic_hd_linux.7z"
-
-7z x -aoa -o"$INSTALL_DIR/$GAME_NAME/game/tmp" \
-"$DOWNLOAD_DIR/$GAME_NAME/translations.zip"
-cp -R "$INSTALL_DIR/$GAME_NAME/game/tmp/"*/* \
-"$INSTALL_DIR/$GAME_NAME/game/game/assets/translations"
-rm -r "$INSTALL_DIR/$GAME_NAME/game/tmp/"
-cd "$INSTALL_DIR/$GAME_NAME/game/game/assets/translations/"
-rm -r ./_source ./README.md ./LICENSE
-
-if [ "$KEEP_INSTALLERS" == 'False' ]; then
-rm -R "$DOWNLOAD_DIR/$GAME_NAME"
+if [ "${KEEP_INSTALLERS}" == 'False' ]; then
+    rm -R "${DOWNLOAD_DIR}/${GAME_NAME}"
 fi
 
 #Spelunky Classic HD
