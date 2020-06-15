@@ -6,10 +6,11 @@ VERSION=$(python "${NEBULA_DIR}/dialogs.py" list "i386, i386-yyc, HTML5 i386, HT
 
 if [[ "${VERSION}" == *"i386"* ]] && [[ "${VERSION}" != *"HTML5"* ]]; then
     echo "i386"
-    DIST_NAME="spelunky_classic_hd-linux-${VERSION}.zip"
-    DOWNLOAD_URL=$(curl -s 'https://api.github.com/repos/yancharkin/SpelunkyClassicHD/releases/latest' | grep browser_download_url | grep linux-${VERSION}.zip | cut -d '"' -f 4)
+    DIST_NAME="spelunky_classic_hd-linux-${VERSION}.tar.gz"
+    DOWNLOAD_URL=$(curl -s 'https://api.github.com/repos/yancharkin/SpelunkyClassicHD/releases/latest' | grep browser_download_url | grep linux-${VERSION}.tar.gz| cut -d '"' -f 4)
     get_mylib_distr "${DIST_NAME}" "${DOWNLOAD_URL}"
-    7z x -aoa -o"${INSTALL_DIR}/${GAME_NAME}/game" "${DOWNLOAD_DIR}/${GAME_NAME}/${DIST_NAME}"
+    mkdir -p "${INSTALL_DIR}/${GAME_NAME}/game"
+    tar -xf "${DOWNLOAD_DIR}/${GAME_NAME}/${DIST_NAME}" -C "${INSTALL_DIR}/${GAME_NAME}/game"
 else
     if [[ "${VERSION}" == *"amd64"* ]]; then
         DIST_NAME="spelunky_classic_hd_html5-linux-x86_64.AppImage"
